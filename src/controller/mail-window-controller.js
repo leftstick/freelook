@@ -3,7 +3,7 @@ const settings = require('electron-settings')
 const CssInjector = require('../js/css-injector')
 const path = require('path')
 
-const outlookUrl = 'https://outlook.live.com/mail'
+const outlookUrl = 'https://partner.outlook.cn/owa/'
 const deeplinkUrls = ['outlook.live.com/mail/deeplink', 'outlook.office365.com/mail/deeplink', 'outlook.office.com/mail/deeplink']
 const outlookUrls = ['outlook.live.com', 'outlook.office365.com', 'outlook.office.com']
 
@@ -44,14 +44,6 @@ class MailWindowController {
             this.addUnreadNumberObserver()
 
             this.win.show()
-        })
-
-        // prevent the app quit, hide the window instead.
-        this.win.on('close', (e) => {
-            if (this.win.isVisible()) {
-                e.preventDefault()
-                this.win.hide()
-            }
         })
 
         // Emitted when the window is closed.

@@ -58,7 +58,7 @@ class TrayController {
     }
 
     cleanupAndQuit() {
-        app.exit(0)
+        app.exit()
     }
 }
 
