@@ -30,6 +30,9 @@
   },
   "build": {
     "appId": "freelook.cn.${name}",
+    "mac": {
+      "category": "public.app-category.utilities"
+    },
     "win": {
       "target": "msi"
     }
