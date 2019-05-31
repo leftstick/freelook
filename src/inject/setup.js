@@ -1,3 +1,5 @@
+const path = require('path')
+
 titleChange()
 configNotification()
 removeMainToolButton()
@@ -29,54 +31,50 @@ function removeMainToolButton() {
 }
 
 function configNotification() {
-  const userNameEle = document.querySelector('#O365_MeFlexPane_ButtonID')
-  if (!userNameEle) {
-    return setTimeout(configNotification, 1000)
+  const intercept = (urlmatch, callback) => {
+    let send = XMLHttpRequest.prototype.send
+    XMLHttpRequest.prototype.send = function() {
+      this.addEventListener(
+        'readystatechange',
+        function() {
+          if (this.responseURL.includes(urlmatch) && this.readyState === 4) {
+            callback(this)
+          }
+        },
+        false
+      )
+      send.apply(this, arguments)
+    }
   }
 
-  try {
-    const userName = userNameEle.getAttribute('title')
-    const unreadSpan = document.querySelector('[aria-label="' + userName + '"]  div div div span div div span')
+  intercept('https://partner.outlook.cn/owa/service.svc?action=GetItem', req => {
+    try {
+      const responseContent = JSON.parse(req.response)
+      const items = responseContent.Body.ResponseMessages.Items
 
-    const count = Number((unreadSpan.innerText || '').trim())
+      for (let i = 0; i < items.length; i++) {
+        const innerItems = items[0].Items
 
-    if (window.lastUnreadCount === count) {
-      return setTimeout(configNotification, 1000)
+        for (let j = 0; j < innerItems.length; j++) {
+          const innerItem = innerItems[j]
+          const subject = innerItem.Subject
+          const isRead = innerItem.IsRead
+          const from = innerItem.From.Mailbox.Name || innerItem.From.Mailbox.EmailAddress
+
+          if (isRead) {
+            continue
+          }
+
+          new Notification(subject, {
+            body: `unread email from ${from}`,
+            icon: 'file://' + path.join(__dirname, '..', '..', 'assets/outlook_macOS_unread@2x.png')
+          })
+        }
+      }
+    } catch (error) {
+      console.error('error', error)
     }
-
-    if (0 === count) {
-      window.lastUnreadCount = 0
-      return setTimeout(configNotification, 1000)
-    }
-
-    if (window.lastUnreadCount > count) {
-      window.lastUnreadCount = count
-      return setTimeout(configNotification, 1000)
-    }
-
-    window.lastUnreadCount = !window.lastUnreadCount ? 0 : window.lastUnreadCount
-
-    const offset = count - window.lastUnreadCount
-
-    if (offset === 1) {
-      new Notification('New Messages', {
-        body: 'You have one unread email',
-        icon: 'assets/outlook_linux_black.png'
-      })
-    } else {
-      new Notification('New Messages', {
-        body: 'You have ' + offset + ' unread emails',
-        icon: 'assets/outlook_linux_black.png'
-      })
-    }
-
-    window.lastUnreadCount = count
-
-    return setTimeout(configNotification, 1000)
-  } catch (error) {
-    console.error('error', error)
-    return setTimeout(configNotification, 1000)
-  }
+  })
 }
 
 function titleChange() {

@@ -2,12 +2,14 @@ const { app } = require('electron')
 const MailWindowController = require('./controller/mail-window-controller')
 const TrayController = require('./controller/tray-controller')
 const MenuController = require('./controller/menu-controller')
+const HttpInterceptor = require('./controller/httpInterceptor')
 
 class ElectronOutlook {
   constructor() {
-    this.mailController = null;
-    this.trayController = null;
-    this.menuController = null;
+    this.mailController = null
+    this.trayController = null
+    this.menuController = null
+    this.httpInterceptor = null
   }
 
   // init method, the entry point of the app
@@ -48,6 +50,7 @@ class ElectronOutlook {
     this.mailController = new MailWindowController()
     this.trayController = new TrayController(this.mailController)
     this.menuController = new MenuController()
+    this.httpInterceptor = new HttpInterceptor()
   }
 }
 
